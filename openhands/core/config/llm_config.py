@@ -66,6 +66,7 @@ class LLMConfig(BaseModel):
     aws_region_name: str | None = Field(default=None)
     openrouter_site_url: str = Field(default='https://docs.all-hands.dev/')
     openrouter_app_name: str = Field(default='OpenHands')
+    openrouter_api_key: SecretStr | None = Field(default=None)
     # total wait time: 8 + 16 + 32 + 64 = 120 seconds
     num_retries: int = Field(default=5)
     retry_multiplier: float = Field(default=8)
@@ -185,6 +186,8 @@ class LLMConfig(BaseModel):
             os.environ['OR_SITE_URL'] = self.openrouter_site_url
         if self.openrouter_app_name:
             os.environ['OR_APP_NAME'] = self.openrouter_app_name
+        if self.openrouter_api_key:
+            os.environ['OPENROUTER_API_KEY'] = self.openrouter_api_key.get_secret_value()
 
         # Do not set a default reasoning_effort. Leave as None unless user-configured.
 

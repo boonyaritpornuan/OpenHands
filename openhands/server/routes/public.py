@@ -15,7 +15,7 @@ from openhands.controller.agent import Agent
 from openhands.security.options import SecurityAnalyzers
 from openhands.server.dependencies import get_dependencies
 from openhands.server.shared import config, server_config
-from openhands.utils.llm import get_supported_llm_models
+from openhands.utils.llm import get_supported_llm_models, fetch_openrouter_models as fetch_openrouter_models_from_api
 
 app = APIRouter(prefix='/api/options', dependencies=get_dependencies())
 
@@ -35,6 +35,16 @@ async def get_litellm_models(
     models: list[str] = Depends(get_llm_models_dependency),
 ) -> list[str]:
     return models
+
+
+@app.get('/openrouter-models')
+async def list_openrouter_models() -> list[str]:
+    """Get all models available through OpenRouter API.
+    
+    Returns:
+        list[str]: A list of OpenRouter model IDs prefixed with 'openrouter/'
+    """
+    return await fetch_openrouter_models_from_api()
 
 
 @app.get('/agents', response_model=list[str])

@@ -79,4 +79,5 @@ export type Settings = {
   git_user_email?: string;
   v1_enabled?: boolean;
   sandbox_grouping_strategy?: SandboxGroupingStrategy;
+  openrouter_api_key_set?: boolean;
 };

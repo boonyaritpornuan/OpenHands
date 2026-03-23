@@ -11,6 +11,7 @@ import {
   VERIFIED_MODELS,
   VERIFIED_PROVIDERS,
   VERIFIED_OPENHANDS_MODELS,
+  VERIFIED_OPENROUTER_MODELS,
 } from "#/utils/verified-models";
 import { extractModelAndProvider } from "#/utils/extract-model-and-provider";
 import { cn } from "#/utils/utils";
@@ -50,7 +51,29 @@ export function ModelSelector({
     if (selectedProvider === "openhands") {
       return VERIFIED_OPENHANDS_MODELS;
     }
+    if (selectedProvider === "openrouter") {
+      return VERIFIED_OPENROUTER_MODELS;
+    }
     return VERIFIED_MODELS;
+  };
+
+  // Separate free models from paid models for OpenRouter
+  const getOpenRouterFreeModels = () => {
+    if (selectedProvider !== "openrouter") return [];
+    return (
+      models[selectedProvider]?.models
+        .filter((model) => model.includes("[FREE]"))
+        .map((model) => model.replace(" [FREE]", "")) || []
+    );
+  };
+
+  const getOpenRouterPaidModels = () => {
+    if (selectedProvider !== "openrouter") return [];
+    return (
+      models[selectedProvider]?.models
+        .filter((model) => !model.includes("[FREE]"))
+        .map((model) => model.replace(" [FREE]", "")) || []
+    );
   };
 
   React.useEffect(() => {
@@ -196,16 +219,68 @@ export function ModelSelector({
             },
           }}
         >
-          <AutocompleteSection title={t(I18nKey.MODEL_SELECTOR$VERIFIED)}>
-            {getVerifiedModels()
-              .filter((model) =>
-                models[selectedProvider || ""]?.models?.includes(model),
-              )
-              .map((model) => (
-                <AutocompleteItem key={model}>{model}</AutocompleteItem>
-              ))}
-          </AutocompleteSection>
-          {models[selectedProvider || ""]?.models?.some(
+          {/* For OpenRouter: Show FREE models section first */}
+          {selectedProvider === "openrouter" &&
+          getOpenRouterFreeModels().length > 0 ? (
+            <AutocompleteSection title={t(I18nKey.MODEL_SELECTOR$FREE_MODELS)}>
+              {getOpenRouterFreeModels()
+                .filter(
+                  (model) =>
+                    models[selectedProvider || ""]?.models?.includes(
+                      `${model} [FREE]`,
+                    ) ||
+                    models[selectedProvider || ""]?.models?.includes(model),
+                )
+                .map((model) => (
+                  <AutocompleteItem
+                    key={model}
+                    data-testid={`model-item-${model}`}
+                  >
+                    {model}
+                  </AutocompleteItem>
+                ))}
+            </AutocompleteSection>
+          ) : null}
+
+          {/* For other providers or verified models */}
+          {selectedProvider !== "openrouter" ? (
+            <AutocompleteSection title={t(I18nKey.MODEL_SELECTOR$VERIFIED)}>
+              {getVerifiedModels()
+                .filter((model) =>
+                  models[selectedProvider || ""]?.models?.includes(model),
+                )
+                .map((model) => (
+                  <AutocompleteItem key={model}>{model}</AutocompleteItem>
+                ))}
+            </AutocompleteSection>
+          ) : null}
+
+          {/* For OpenRouter: Show paid models in separate section */}
+          {selectedProvider === "openrouter" &&
+          getOpenRouterPaidModels().length > 0 ? (
+            <AutocompleteSection title={t(I18nKey.MODEL_SELECTOR$PAID_MODELS)}>
+              {getOpenRouterPaidModels()
+                .filter(
+                  (model) =>
+                    models[selectedProvider || ""]?.models?.includes(
+                      `${model} [FREE]`,
+                    ) ||
+                    models[selectedProvider || ""]?.models?.includes(model),
+                )
+                .map((model) => (
+                  <AutocompleteItem
+                    data-testid={`model-item-${model}`}
+                    key={model}
+                  >
+                    {model}
+                  </AutocompleteItem>
+                ))}
+            </AutocompleteSection>
+          ) : null}
+
+          {/* For other providers: Show other/unverified models */}
+          {selectedProvider !== "openrouter" &&
+          models[selectedProvider || ""]?.models?.some(
             (model) => !getVerifiedModels().includes(model),
           ) ? (
             <AutocompleteSection title={t(I18nKey.MODEL_SELECTOR$OTHERS)}>

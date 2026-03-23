@@ -15,6 +15,17 @@ class OptionService {
   }
 
   /**
+   * Retrieve the list of OpenRouter models available
+   * @returns List of OpenRouter models available
+   */
+  static async getOpenRouterModels(): Promise<string[]> {
+    const { data } = await openHands.get<string[]>(
+      "/api/options/openrouter-models",
+    );
+    return data;
+  }
+
+  /**
    * Retrieve the list of agents available
    * @returns List of agents available
    */

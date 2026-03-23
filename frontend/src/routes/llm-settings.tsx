@@ -140,9 +140,14 @@ function LlmSettingsScreen() {
     null,
   );
 
-  const modelsAndProviders = organizeModelsAndProviders(
-    resources?.models || [],
-  );
+  // Combine regular models with OpenRouter models
+  const allModels = React.useMemo(() => {
+    const regularModels = resources?.models || [];
+    const openRouterModels = resources?.openRouterModels || [];
+    return [...regularModels, ...openRouterModels];
+  }, [resources?.models, resources?.openRouterModels]);
+
+  const modelsAndProviders = organizeModelsAndProviders(allModels);
 
   // Determine if we should hide the API key input and use OpenHands-managed key (when using OpenHands provider in SaaS mode)
   const currentModel = currentSelectedModel || settings?.llm_model;
@@ -652,6 +657,38 @@ function LlmSettingsScreen() {
                     text={t(I18nKey.SETTINGS$DONT_KNOW_API_KEY)}
                     linkText={t(I18nKey.SETTINGS$CLICK_FOR_INSTRUCTIONS)}
                     href="https://docs.all-hands.dev/usage/local-setup#getting-an-api-key"
+                  />
+                </>
+              )}
+
+              {/* OpenRouter API Key for OpenRouter provider */}
+              {(settings.llm_model?.startsWith("openrouter/") ||
+                currentSelectedModel?.startsWith("openrouter/")) && (
+                <>
+                  <SettingsInput
+                    testId="openrouter-api-key-input"
+                    name="openrouter-api-key-input"
+                    label={t(I18nKey.SETTINGS$OPENROUTER_API_KEY)}
+                    type="password"
+                    className="w-full max-w-[680px]"
+                    placeholder={
+                      settings.openrouter_api_key_set ? "<hidden>" : ""
+                    }
+                    onChange={handleApiKeyIsDirty}
+                    isDisabled={isReadOnly}
+                    startContent={
+                      settings.openrouter_api_key_set && (
+                        <KeyStatusIcon
+                          isSet={settings.openrouter_api_key_set}
+                        />
+                      )
+                    }
+                  />
+                  <HelpLink
+                    testId="openrouter-api-key-help-anchor"
+                    text={t(I18nKey.SETTINGS$OPENROUTER_API_KEY_HELP)}
+                    linkText={t(I18nKey.SETTINGS$GET_OPENROUTER_KEY)}
+                    href="https://openrouter.ai/keys"
                   />
                 </>
               )}

@@ -6,6 +6,7 @@ export const VERIFIED_PROVIDERS = [
   "mistral",
   "lemonade",
   "clarifai",
+  "openrouter",
 ];
 export const VERIFIED_MODELS = [
   "claude-opus-4-6",
@@ -75,6 +76,21 @@ export const VERIFIED_OPENHANDS_MODELS = [
   "qwen3-coder-next",
   "glm-4.7",
   "glm-5",
+];
+
+// Verified OpenRouter models (popular ones)
+// OpenRouter provides many models, these are some commonly used ones
+export const VERIFIED_OPENROUTER_MODELS = [
+  "anthropic/claude-3.5-sonnet",
+  "anthropic/claude-3-opus",
+  "openai/gpt-4o",
+  "openai/gpt-4o-mini",
+  "openai/gpt-4-turbo",
+  "meta-llama/llama-3-70b-instruct",
+  "meta-llama/llama-3-8b-instruct",
+  "google/gemini-pro-1.5",
+  "mistralai/mistral-large",
+  "deepseek/deepseek-chat",
 ];
 
 // Default model for OpenHands provider

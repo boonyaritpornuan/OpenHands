@@ -51,6 +51,59 @@ CLARIFAI_MODELS = [
 ]
 
 
+async def fetch_openrouter_models() -> list[str]:
+    """Fetch available models from OpenRouter API.
+    
+    Returns:
+        list[str]: List of OpenRouter model IDs prefixed with 'openrouter/'
+                   Free models are marked with ' [FREE]' suffix
+    """
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            response = await client.get('https://openrouter.ai/api/v1/models')
+            response.raise_for_status()
+            data = response.json()
+            models = data.get('data', [])
+            
+            result = []
+            for model in models:
+                if 'id' not in model:
+                    continue
+                    
+                model_id = f"openrouter/{model['id']}"
+                
+                # Check if model is free (both pricing and prompt caching pricing)
+                pricing = model.get('pricing', {})
+                is_free = False
+                
+                if pricing:
+                    # Check if both prompt and completion are free
+                    prompt_price = float(pricing.get('prompt', '0'))
+                    completion_price = float(pricing.get('completion', '0'))
+                    
+                    # Also check context pricing
+                    context_price = float(pricing.get('context', '0'))
+                    write_price = float(pricing.get('write', '0'))
+                    
+                    if prompt_price == 0 and completion_price == 0 and context_price == 0 and write_price == 0:
+                        is_free = True
+                
+                if is_free:
+                    model_id += ' [FREE]'
+                
+                result.append(model_id)
+            
+            # Sort: free models first, then alphabetically
+            result.sort(key=lambda x: (not x.endswith('[FREE]'), x.lower()))
+            return result
+    except httpx.HTTPError as e:
+        logger.error(f'Error fetching OpenRouter models: {e}')
+        return []
+    except (KeyError, ValueError) as e:
+        logger.error(f'Error parsing OpenRouter models response: {e}')
+        return []
+
+
 def is_openhands_model(model: str | None) -> bool:
     """Check if the model uses the OpenHands provider.
 
