@@ -1,9 +1,24 @@
+#!/usr/bin/env bash
+
 # Run frontend checks
 echo "Running frontend checks..."
 cd frontend
 npx lint-staged
+FRONTEND_STATUS=$?
 
 # Run backend pre-commit
 echo "Running backend pre-commit..."
 cd ..
-poetry run pre-commit run --files openhands/**/* evaluation/**/* tests/**/* --show-diff-on-failure --config ./dev_config/python/.pre-commit-config.yaml
+if which poetry > /dev/null 2>&1; then
+    poetry run pre-commit run --files openhands/**/* evaluation/**/* tests/**/* --show-diff-on-failure --config ./dev_config/python/.pre-commit-config.yaml
+    BACKEND_STATUS=$?
+else
+    echo "⚠️  poetry not found, skipping backend pre-commit checks"
+    echo "   Install poetry with: curl -sSL https://install.python-poetry.org | python3 -"
+    BACKEND_STATUS=0
+fi
+
+# Exit with error if any check failed
+if [ $FRONTEND_STATUS -ne 0 ] || [ $BACKEND_STATUS -ne 0 ]; then
+    exit 1
+fi
